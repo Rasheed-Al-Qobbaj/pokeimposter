@@ -1,10 +1,11 @@
 // Screen 3: your secret card for this round, the speaking order, and the reveal.
 import { gameTag } from '../engine/code';
 import { deal, handFor } from '../engine/deal';
-import type { Game } from '../engine/types';
+import type { Disguise, Game } from '../engine/types';
 import { cardFront, CATEGORY_LABEL, dittoFront, miniCard } from './cards';
 import type { Ctx } from './context';
 import { esc, flash, gameUrl, go, shareLink } from './dom';
+import { loadText, textNow } from './text';
 
 export const topBar = (tag: string) => `
   <header class="top-bar">
@@ -12,22 +13,26 @@ export const topBar = (tag: string) => `
     <span class="game-tag" title="Everyone should see the same game tag">Game ${esc(tag)}</span>
   </header>`;
 
+/** Team Rocket ranks: an Executive's disguise is sneaky (shares a type), a Grunt's is sloppy (anything goes). */
+export const rocketRank = (disguise: Disguise) => (disguise === 'sneaky' ? 'Executive' : 'Grunt');
+
 export function modeNote(game: Game): string {
   const k = game.imposters;
   if (game.mode === 'ditto') {
     return `<p class="mode-note ditto-note">${k > 1 ? `${k} Dittos are` : 'A Ditto is'} hiding among you.</p>`;
   }
+  const rank = rocketRank(game.disguise);
   const disguise = game.disguise === 'sneaky' ? 'a sneaky disguise' : 'a sloppy disguise';
-  return `<p class="mode-note rocket-note"><span class="rocket-r small" aria-hidden="true">R</span>${k > 1 ? `${k} Team Rocket spies are` : 'A Team Rocket spy is'} among you, in ${disguise}. They might not even know it.</p>`;
+  return `<p class="mode-note rocket-note"><span class="rocket-r small" aria-hidden="true">R</span>${k > 1 ? `${k} Team Rocket ${rank}s have` : `A Team Rocket ${rank} has`} infiltrated your squad in ${disguise}. They might not even know it.</p>`;
 }
 
 export function renderTable(root: HTMLElement, ctx: Ctx, me: number) {
   const { game, code, round, pools } = ctx;
   const d = deal(game, round, pools);
   const hand = handFor(d, me);
-  const isDitto = hand.kind === 'ditto';
-  const role = game.mode === 'ditto' ? 'Ditto' : 'spy';
-  const roles = game.mode === 'ditto' ? 'Dittos' : 'spies';
+  const role = game.mode === 'ditto' ? 'Ditto' : rocketRank(game.disguise);
+  const roles = game.mode === 'ditto' ? 'Dittos' : `${role}s`;
+  const front = () => (hand.kind === 'ditto' ? dittoFront(hand.category) : cardFront(hand.card, textNow()));
   let armed = false;
 
   root.innerHTML = `
@@ -47,9 +52,7 @@ export function renderTable(root: HTMLElement, ctx: Ctx, me: number) {
           <span class="ball"></span>
           <span class="peek-label">Hold to peek</span>
         </span>
-        <span class="face front ${isDitto ? 'front-ditto' : ''}">
-          ${hand.kind === 'ditto' ? dittoFront(hand.category) : cardFront(hand.card)}
-        </span>
+        ${front()}
       </span>
     </button>
     <p class="hint center">Category this round: <strong>${CATEGORY_LABEL[d.category]}</strong></p>
@@ -99,6 +102,13 @@ export function renderTable(root: HTMLElement, ctx: Ctx, me: number) {
   card.addEventListener('keyup', hide);
   card.addEventListener('click', (e) => e.preventDefault());
 
+  // Descriptions arrive a moment later on the first card; swap the face in place when they do.
+  if (!textNow() && hand.kind === 'card' && hand.card.category !== 'pokemon') {
+    loadText().then(() => {
+      if (card.isConnected) card.querySelector('.front')!.outerHTML = front();
+    });
+  }
+
   const reveal = () => {
     const names = d.imposters.map((p) => `<strong>${esc(game.players[p])}</strong>`).join(' & ');
     root.querySelector('.reveal-slot')!.innerHTML = `
@@ -107,7 +117,7 @@ export function renderTable(root: HTMLElement, ctx: Ctx, me: number) {
         <p class="culprit">${names}</p>
         <div class="minis">
           ${miniCard(d.card, d.decoy ? "Everyone's card" : 'The card')}
-          ${d.decoy ? miniCard(d.decoy, `${d.imposters.length > 1 ? "Spies'" : "Spy's"} card`) : ''}
+          ${d.decoy ? miniCard(d.decoy, `${d.imposters.length > 1 ? `${roles}'` : `${role}'s`} card`) : ''}
         </div>
       </section>`;
   };

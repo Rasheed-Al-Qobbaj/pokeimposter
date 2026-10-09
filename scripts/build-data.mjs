@@ -43,10 +43,27 @@ const pokemon = pokemonspecies
   .filter((p) => enName(p.pokemonspeciesnames) && !blocked('pokemon', p.name))
   .map((p) => [p.id, enName(p.pokemonspeciesnames), p.generation_id, p.pokemons[0].pokemontypes.map((t) => t.type.name)]);
 
+// Card descriptions: the newest in-game text, falling back to PokeAPI's short effect.
+// Sword/Shield replaced removed moves' text with "This move can't be used…", so skip that.
+const clean = (s) =>
+  s?.replace(/­\s*/g, '')
+    .replace(/\[([^\]]*)\]\{[^:}]*:([^}]*)\}/g, (_, label, id) => label || id.replace(/-/g, ' '))
+    .replace(/[\s\f]+/g, ' ')
+    .trim();
+function describe(flavors, effects, chance) {
+  const flavor = flavors.map((f) => clean(f.flavor_text)).find((t) => t && t !== '???' && !/can.t be used/i.test(t));
+  if (flavor) return flavor;
+  return clean(effects?.[0]?.short_effect)?.replace(/\$effect_chance/g, String(chance ?? '')) ?? '';
+}
+const FLAVOR = `(where: {language_id: {_eq: ${EN}}}, order_by: {version_group_id: desc})`;
+const EFFECT = `(where: {language_id: {_eq: ${EN}}})`;
+
 const { move } = await gql(`{
   move(order_by: {id: asc}) {
-    id name generation_id pp type { name }
+    id name generation_id pp power accuracy move_effect_chance type { name } movedamageclass { name }
     movenames(where: {language_id: {_eq: ${EN}}}) { name }
+    moveflavortexts${FLAVOR} { flavor_text }
+    moveeffect { moveeffecteffecttexts${EFFECT} { short_effect } }
   }
 }`);
 const isZMove = (m) => m.generation_id === 7 && m.pp === 1;
@@ -60,6 +77,8 @@ const { ability } = await gql(`{
   ability(order_by: {id: asc}, where: {is_main_series: {_eq: true}}) {
     id name generation_id
     abilitynames(where: {language_id: {_eq: ${EN}}}) { name }
+    abilityflavortexts${FLAVOR} { flavor_text }
+    abilityeffecttexts${EFFECT} { short_effect }
   }
 }`);
 const abilities = ability
@@ -70,6 +89,8 @@ const { item } = await gql(`{
   item(order_by: {id: asc}, where: {itemcategory: {name: {_in: ${JSON.stringify(ITEM_CATEGORIES)}}}}) {
     id name itemcategory { name }
     itemnames(where: {language_id: {_eq: ${EN}}}) { name }
+    itemflavortexts${FLAVOR} { flavor_text }
+    itemeffecttexts${EFFECT} { short_effect }
   }
 }`);
 const items = item
@@ -96,6 +117,33 @@ for (const [name, rows] of Object.entries(files)) {
   hash.update(text);
   gz += gzipSync(text).length;
 }
+// Descriptions don't affect the deal, so they live outside the data-version hash:
+// rewording a description never breaks links people already shared.
+const byId = (rows) => new Map(rows.map((r) => [r.id, r]));
+const moveById = byId(move);
+const abilityById = byId(ability);
+const itemById = byId(item);
+const text = {
+  move: Object.fromEntries(files.moves.map(([id]) => {
+    const m = moveById.get(id);
+    const desc = describe(m.moveflavortexts, m.moveeffect?.moveeffecteffecttexts, m.move_effect_chance);
+    return [id, [desc, m.movedamageclass?.name ?? '', m.power, m.accuracy]];
+  })),
+  ability: Object.fromEntries(files.abilities.map(([id]) => {
+    const a = abilityById.get(id);
+    return [id, describe(a.abilityflavortexts, a.abilityeffecttexts)];
+  })),
+  item: Object.fromEntries(files.items.map(([id]) => {
+    const i = itemById.get(id);
+    return [id, describe(i.itemflavortexts, i.itemeffecttexts)];
+  })),
+};
+const textJson = JSON.stringify(text);
+writeFileSync(new URL('text.json', OUT), textJson);
+const missing = Object.fromEntries(Object.entries(text).map(([k, v]) =>
+  [k, Object.values(v).filter((d) => !(Array.isArray(d) ? d[0] : d)).length]));
+console.log(`descriptions gzip ${(gzipSync(textJson).length / 1024).toFixed(1)} KB, missing:`, missing);
+
 const meta = {
   dv: hash.digest('hex').slice(0, 8),
   counts: Object.fromEntries(Object.entries(files).map(([k, v]) => [k, v.length])),

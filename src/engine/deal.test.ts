@@ -11,7 +11,7 @@ function game(over: Partial<Game> = {}): Game {
   return {
     v: ENGINE_VERSION,
     dv: DATA_VERSION,
-    players: ['Rasheed', 'Hassan', 'Arafat'],
+    players: ['Ash', 'Misty', 'Brock'],
     imposters: 1,
     categories: ALL_CATS,
     gens: GENERATIONS,
@@ -54,7 +54,7 @@ describe('rng', () => {
 
 describe('game link', () => {
   it('round-trips, including Arabic names', () => {
-    const g = game({ players: ['رشيد', 'حسن', 'عرفات', 'Ash'], mode: 'rocket', disguise: 'sloppy', gens: [1, 4, 9], categories: ['pokemon', 'item'] });
+    const g = game({ players: ['بيكاتشو', 'إيفي', 'سنورلاكس', 'Ash'], mode: 'rocket', disguise: 'sloppy', gens: [1, 4, 9], categories: ['pokemon', 'item'] });
     expect(decodeGame(encodeGame(g), DATA_VERSION)).toEqual({ ok: true, game: g });
   });
 
@@ -175,5 +175,20 @@ describe('deal', () => {
     }
     for (const c of counts) expect(Math.abs(c - 1000)).toBeLessThan(100);
     for (const cat of ALL_CATS) expect(Math.abs(cats[cat] - 750)).toBeLessThan(100);
+  });
+});
+
+describe('README worked example', () => {
+  // docs/how-deal.png and docs/fisher-yates.png show this exact round. If this fails, re-render them.
+  it('game k7qx92ab, round 3: Farfetch’d, Misty is the Ditto, Ash speaks first', () => {
+    const g = game({ players: ['Ash', 'Misty', 'Brock'], seed: 'k7qx92ab' });
+    expect(hashString('k7qx92ab:3')).toBe(913420011);
+    const rng = mulberry32(913420011);
+    expect(Array.from({ length: 6 }, () => rng().toFixed(4))).toEqual(['0.1407', '0.0805', '0.0858', '0.2087', '0.4745', '0.9619']);
+    const d = deal(g, 3, buildPools(g.gens));
+    expect(d.category).toBe('pokemon');
+    expect(d.card.name).toBe('Farfetch’d');
+    expect(d.imposters).toEqual([1]);
+    expect(d.order).toEqual([0, 2, 1]);
   });
 });

@@ -3,7 +3,10 @@ export type Category = 'pokemon' | 'move' | 'ability' | 'item';
 /** ditto: the imposter knows and only sees the category. rocket: the spy gets a decoy card and doesn't know. */
 export type Mode = 'ditto' | 'rocket';
 
-/** sneaky: the decoy shares a type (or item group). sloppy: any card from the same category. */
+/**
+ * sneaky: the decoy shares a type (or item group). sloppy: any card from the same category.
+ * The UI calls these Team Rocket ranks: sneaky = Executive, sloppy = Grunt.
+ */
 export type Disguise = 'sneaky' | 'sloppy';
 
 export interface Game {

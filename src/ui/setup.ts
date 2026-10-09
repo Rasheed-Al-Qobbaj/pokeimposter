@@ -4,6 +4,7 @@ import { buildPools, CATEGORY_ORDER, DATA_VERSION, GENERATIONS, playableCategori
 import type { Category, Disguise, Mode } from '../engine/types';
 import { artworkUrl, CATEGORY_PLURAL, DITTO_ID, roman } from './cards';
 import { esc, go, store } from './dom';
+import { rocketRank } from './table';
 
 interface SetupState {
   players: string[];
@@ -51,14 +52,15 @@ export function renderSetup(root: HTMLElement) {
     const max = maxImposters(n);
     s.imposters = Math.min(Math.max(1, s.imposters), max);
     const pools = buildPools(s.gens);
-    const role = s.mode === 'ditto' ? (s.imposters > 1 ? 'Dittos' : 'Ditto') : s.imposters > 1 ? 'Spies' : 'Spy';
+    const single = s.mode === 'ditto' ? 'Ditto' : rocketRank(s.disguise);
+    const role = s.imposters > 1 ? `${single}s` : single;
     const allGens = s.gens.length === GENERATIONS.length;
 
     root.innerHTML = `
       <header class="brand">
         <img class="brand-logo" src="/logo.svg" alt="" width="88" height="88">
         <h1>PokeImposter</h1>
-        <p class="tagline">One link. Everyone gets the same secret card… except the imposter.</p>
+        <p class="tagline">Find the Ditto before it fools you.</p>
       </header>
 
       <form class="setup" novalidate>
@@ -91,13 +93,13 @@ export function renderSetup(root: HTMLElement) {
             </button>
           </div>
           ${s.mode === 'rocket' ? `
-            <h3>Spy's disguise</h3>
-            <div class="segmented" role="radiogroup" aria-label="Spy's disguise">
-              <button type="button" role="radio" data-disguise="sneaky" aria-checked="${s.disguise === 'sneaky'}">
-                <strong>Sneaky</strong><span>Shares a type or item group</span>
-              </button>
+            <h3>Spy's rank</h3>
+            <div class="segmented" role="radiogroup" aria-label="Spy's rank">
               <button type="button" role="radio" data-disguise="sloppy" aria-checked="${s.disguise === 'sloppy'}">
-                <strong>Sloppy</strong><span>Anything from the same category</span>
+                <strong>Grunt</strong><span>Sloppy disguise: any card from the same category</span>
+              </button>
+              <button type="button" role="radio" data-disguise="sneaky" aria-checked="${s.disguise === 'sneaky'}">
+                <strong>Executive</strong><span>Sneaky disguise: shares a type or item group</span>
               </button>
             </div>` : ''}
         </section>

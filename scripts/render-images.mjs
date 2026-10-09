@@ -1,25 +1,6 @@
 // Renders the README banner, the link-preview image (og.png) and the iPhone icon from public/logo.svg.
 // Run with `npm run og`. Uses system fonts (Segoe UI on Windows).
-import { Resvg } from '@resvg/resvg-js';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-
-const root = new URL('../', import.meta.url);
-const logoSvg = readFileSync(new URL('public/logo.svg', root), 'utf8');
-const logoInner = logoSvg.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
-const logo = (x, y, size) => `<g transform="translate(${x} ${y}) scale(${size / 256})">${logoInner}</g>`;
-
-const FONT = `font-family="Segoe UI, Arial, sans-serif"`;
-const background = (w, h) => `
-  <defs>
-    <radialGradient id="glow" cx="50%" cy="0%" r="80%">
-      <stop offset="0" stop-color="#2c3a85"/><stop offset="1" stop-color="#10142A"/>
-    </radialGradient>
-    <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">
-      <circle cx="1" cy="1" r="1.2" fill="#ffffff" opacity=".07"/>
-    </pattern>
-  </defs>
-  <rect width="${w}" height="${h}" fill="url(#glow)"/>
-  <rect width="${w}" height="${h}" fill="url(#dots)"/>`;
+import { background, FONT, logo, render } from './svg-kit.mjs';
 
 const title = (x, y, size) => `
   <text x="${x}" y="${y}" ${FONT} font-size="${size}" font-weight="900" fill="#1d377a">PokeImposter</text>
@@ -38,23 +19,14 @@ const pills = (x, y, labels) => {
   }).join('');
 };
 
-function render(svg, width, file) {
-  const png = new Resvg(svg, { fitTo: { mode: 'width', value: width }, font: { loadSystemFonts: true, defaultFontFamily: 'Segoe UI' } }).render().asPng();
-  const out = new URL(file, root);
-  mkdirSync(new URL('./', out), { recursive: true });
-  writeFileSync(out, png);
-  console.log(`${file}  ${(png.length / 1024).toFixed(0)} KB`);
-}
-
 // Link preview for WhatsApp, Discord, etc.
 render(`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   ${background(1200, 630)}
   ${logo(70, 135, 360)}
   ${title(478, 272, 92)}
-  <text x="486" y="350" ${FONT} font-size="40" font-weight="700" fill="#ffffff">Who's the Ditto?</text>
-  <text x="486" y="400" ${FONT} font-size="27" fill="#A9B1D6">One link. Everyone gets the same secret card…</text>
-  <text x="486" y="437" ${FONT} font-size="27" fill="#A9B1D6">except the imposter.</text>
-  ${pills(486, 480, ['Pokémon', 'Moves', 'Abilities', 'Items'])}
+  <text x="486" y="350" ${FONT} font-size="40" font-weight="700" fill="#ffffff">A Pokémon imposter party game</text>
+  <text x="486" y="404" ${FONT} font-size="30" fill="#A9B1D6">Find the Ditto before it fools you.</text>
+  ${pills(486, 450, ['Pokémon', 'Moves', 'Abilities', 'Items'])}
 </svg>`, 1200, 'public/og.png');
 
 // README banner.
@@ -63,7 +35,7 @@ render(`<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBo
   ${logo(120, 60, 300)}
   ${title(470, 200, 112)}
   <text x="476" y="268" ${FONT} font-size="36" font-weight="700" fill="#ffffff">A Pokémon imposter party game</text>
-  <text x="476" y="314" ${FONT} font-size="27" fill="#A9B1D6">One link. Same secret card. Find the Ditto before it fools you.</text>
+  <text x="476" y="316" ${FONT} font-size="30" fill="#A9B1D6">Find the Ditto before it fools you.</text>
 </svg>`, 1280, 'docs/banner.png');
 
 // iPhone home-screen icon.

@@ -1,6 +1,6 @@
 # PokeImposter — PLAN
 
-A free, fast Pokémon imposter game for Rasheed, Hassan and Arafat. Everyone except the imposter(s) gets the same secret card (a Pokémon, Move, Ability or Item). Players take turns saying one related word, then vote out loud.
+A free, fast Pokémon imposter game for game nights with friends. Everyone except the imposter(s) gets the same secret card (a Pokémon, Move, Ability or Item). Players take turns saying one related word, then vote out loud.
 
 ## Status
 | # | Gate | Status | Date |
@@ -10,9 +10,10 @@ A free, fast Pokémon imposter game for Rasheed, Hassan and Arafat. Everyone exc
 | 2 | Deterministic engine + Vitest | ✅ done: 15 tests pass | 2026-10-10 |
 | 3 | Mobile UI, verified in browser (3 tabs = 3 players) | ✅ done: same deal through round 5 and after a refresh | 2026-10-10 |
 | 4 | Deploy to Vercel, real-phone test | 🟡 live at https://pokeimposter.vercel.app; real 3-phone test still to do | 2026-10-10 |
-| 5 | Team Rocket Spy mode (Sneaky + Sloppy disguises) | ✅ done, built with Gates 2–3 | 2026-10-10 |
+| 5 | Team Rocket Spy mode (Executive + Grunt ranks) | ✅ done, built with Gates 2–3 | 2026-10-10 |
+| 6 | Polish: card descriptions, type-themed card art, Grunt/Executive ranks, README figures, no real names | ✅ done: 16 tests pass, verified in browser | 2026-10-10 |
 
-All gates ran in one session at Rasheed's request (2026-10-10). Repo: https://github.com/Rasheed-Al-Qobbaj/pokeimposter (public). Pushes to `main` auto-deploy on Vercel.
+All gates ran in one session at the owner's request (2026-10-10). Repo: https://github.com/Rasheed-Al-Qobbaj/pokeimposter (public). Pushes to `main` auto-deploy on Vercel.
 
 **Next ideas (not planned yet):** Arabic UI, pass-and-play on one phone, score tracking, avoiding repeat cards across rounds.
 
@@ -36,11 +37,14 @@ All gates ran in one session at Rasheed's request (2026-10-10). Repo: https://gi
 | Sprites | `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{id}.png` → 200, CORS * | live HEAD | 2026-10-10 |
 | No Arabic names in PokeAPI | languages: ja, ko, zh, fr, de, es, it, en, cs, pt-br, es-419 | `/api/v2/language` | 2026-10-10 |
 | Vercel Hobby | $0/mo, "for your web app or personal project" | https://vercel.com/pricing | 2026-10-10 |
-| Local tools | Node 25.2.1, npm 11.6.2, git 2.45, `gh` as Rasheed-Al-Qobbaj, Vercel CLI 59.22.0 as rasheed-al-qobbaj | local | 2026-10-10 |
+| Local tools | Node 25.2.1, npm 11.6.2, git 2.45, `gh` and Vercel CLI 59.22.0 logged in | local | 2026-10-10 |
 
 ## Settled decisions
 - **Play setup:** voice or in person, each player on their own phone. **English UI** for v1.
-- **Modes (themed):** **Who's the Ditto?** (was "Classic") is the default. **Team Rocket Spy** (was "Undercover") has two disguises: **Sneaky**, where the decoy shares a type or item group, and **Sloppy**, where the decoy is any card from the same category (added at Rasheed's request).
+- **Modes (themed):** **Who's the Ditto?** (was "Classic") is the default. **Team Rocket Spy** (was "Undercover") has two spy ranks. An **Executive** wears a sneaky disguise, so the decoy shares a type or item group. A **Grunt** wears a sloppy one, so the decoy is any card from the same category. In code these are still `disguise: 'sneaky' | 'sloppy'`, and the link format is unchanged.
+- **Card art:** each card is themed by type (a motif per type in two corners, plus a border gradient). A dual-type Pokémon gets type 1 top-left and type 2 bottom-right. Abilities use sparkles and items use Poké Balls.
+- **Descriptions:** moves, abilities and items show PokeAPI's newest English flavor text, falling back to its short effect. They live in `src/data/text.json`, which loads lazily (about 40 KB gzip) and sits **outside the data-version hash**, so rewording a description never breaks shared links. 7 moves and 31 items (the newest Gen IX ones) have no English text in PokeAPI yet and show without a description.
+- **No real names** in the repo, screenshots or figures. Examples use Ash, Misty and Brock.
 - **Stack:** Vite + TypeScript with no framework, Vitest for engine tests, Vercel auto-deploying from GitHub.
 - **Game link:** `https://pokeimposter.vercel.app/#<code>/<round>`, where `<code>` = base64url JSON `{v, dv, players[], imposters, categories[], gens[], mode, seed}`. It lives in the URL hash, which never reaches a server.
 - **Data-version guard:** `dv` is a short hash of the bundled JSON. If it doesn't match, the phone shows "start a new game" instead of silently desyncing.
