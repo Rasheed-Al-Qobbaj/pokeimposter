@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="PokeImposter logo">
+  <defs>
+    <linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF6B5E"/>
+      <stop offset="1" stop-color="#D92B1F"/>
+    </linearGradient>
+    <linearGradient id="bottom" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#D5DCEE"/>
+    </linearGradient>
+    <clipPath id="ball"><circle cx="128" cy="128" r="110"/></clipPath>
+  </defs>
+  <circle cx="128" cy="128" r="122" fill="#161B3D"/>
+  <g clip-path="url(#ball)">
+    <rect width="256" height="128" fill="url(#top)"/>
+    <rect y="128" width="256" height="128" fill="url(#bottom)"/>
+    <ellipse cx="78" cy="44" rx="30" ry="13" fill="#FFFFFF" opacity=".35" transform="rotate(-28 78 44)"/>
+    <rect y="117" width="256" height="22" fill="#161B3D"/>
+  </g>
+  <!-- the disguise: a domino mask with shifty eyes -->
+  <path d="M30 70 C70 52 186 52 226 70 C232 92 218 108 192 110 C168 112 150 100 140 90 C134 84 122 84 116 90 C106 100 88 112 64 110 C38 108 24 92 30 70 Z" fill="#161B3D"/>
+  <ellipse cx="84" cy="84" rx="22" ry="12" fill="#FFFFFF"/>
+  <ellipse cx="172" cy="84" rx="22" ry="12" fill="#FFFFFF"/>
+  <circle cx="96" cy="85" r="7.5" fill="#161B3D"/>
+  <circle cx="184" cy="85" r="7.5" fill="#161B3D"/>
+  <!-- the button: a question mark -->
+  <circle cx="128" cy="128" r="31" fill="#161B3D"/>
+  <circle cx="128" cy="128" r="22" fill="#FFFFFF"/>
+  <path d="M120 121.5 C120 115 124 112 129 112 C134.5 112 138 115.5 138 120 C138 124.5 135 126.5 131.5 128.5 C129 130 128 131.5 128 134.5" fill="none" stroke="#161B3D" stroke-width="5.5" stroke-linecap="round"/>
+  <circle cx="128" cy="142.5" r="3.6" fill="#161B3D"/>
+</svg>
