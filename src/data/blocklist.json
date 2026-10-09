@@ -1,0 +1,7 @@
+{
+  "_note": "PokeAPI slugs to leave out of the card pool. Edit, then run `npm run data`.",
+  "pokemon": [],
+  "moves": [],
+  "abilities": [],
+  "items": []
+}

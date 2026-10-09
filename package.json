@@ -1,0 +1,22 @@
+{
+  "name": "pokeimposter",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A Pokémon imposter party game. One link, every phone gets the same secret card, except the Ditto.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "data": "node scripts/build-data.mjs",
+    "shots": "node scripts/screenshots.mjs",
+    "og": "node scripts/render-images.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^4.1.11"
+  }
+}

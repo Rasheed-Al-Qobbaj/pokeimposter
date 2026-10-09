@@ -1,0 +1,11 @@
+{
+  "dv": "c21464ed",
+  "counts": {
+    "pokemon": 1025,
+    "moves": 847,
+    "abilities": 313,
+    "items": 404
+  },
+  "source": "https://graphql.pokeapi.co/v1beta2",
+  "fetched": "2026-10-09"
+}
